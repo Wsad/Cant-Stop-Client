@@ -10,6 +10,7 @@ import java.util.Scanner;
 public class BoardFrame extends JFrame implements ActionListener, MouseListener {
 	private JLayeredPane boardPane;
 	private Column[] columns;
+	private JLabel[] colLabels;
 	private ImageIcon backgroundIcon = new ImageIcon("BoardBackground.png");
 	private Container contentPane;
 	private ClientConnection connection;
@@ -22,18 +23,18 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 	private int d1,d2,d3,d4;
 	private JLabel dice1, dice2, dice3, dice4;
 	private int moveChoice;
+	private Timer turnTimer;
 	
 	public BoardFrame(Container contentPaneIn, ClientConnection connectionIn, int playerNum){
 		connection = connectionIn;
-		
 		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
 		contentPane.setLayout(new BorderLayout());
 		
 		JPanel leftPanel = new JPanel();
-		
 		JPanel centrePanel = new JPanel();
 		
+		//set up diceAndButton (contains dice panel and button panel)
 		JPanel diceAndButton = new JPanel();
 		diceAndButton.setLayout(new BoxLayout(diceAndButton,BoxLayout.PAGE_AXIS));
 		diceAndButton.setPreferredSize(new Dimension(200,360));
@@ -41,6 +42,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		diceAndButton.setMinimumSize(new Dimension(200,360));
 		diceAndButton.setBorder(BorderFactory.createEmptyBorder(35, 10, 35, 5));
 		
+		//set up dice panel
 		JPanel dicePanel = new JPanel();
 		dicePanel.setLayout(new GridLayout(2,2));
 		dice1 = new JLabel(new ImageIcon("1.jpg"));
@@ -59,50 +61,44 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		dicePanel.setMaximumSize(new Dimension(120,120));
 		dicePanel.setMinimumSize(new Dimension(120,120));
 		
+		//set up buttonPanel
 		buttonPanel = new JPanel();
 		buttonPanel.setLayout(new BoxLayout(buttonPanel,BoxLayout.LINE_AXIS));
 		roll = new JButton("Roll");
 		stop = new JButton("Stop");
 		roll.addActionListener(this);
 		stop.addActionListener(this);
-		//stop.disable();
-		//buttonPanel.add(Box.createRigidArea(new Dimension(15,7)));
 		buttonPanel.add(roll);
 		buttonPanel.add(Box.createRigidArea(new Dimension(5,7)));
 		buttonPanel.add(stop);
 		
+		//add to diceAndButton
 		diceAndButton.add(Box.createRigidArea(new Dimension(100,100)));
 		diceAndButton.add(dicePanel);
 		diceAndButton.add(Box.createRigidArea(new Dimension(50,50)));
 		diceAndButton.add(buttonPanel);
 		buttonPanel.setAlignmentX(Container.CENTER_ALIGNMENT);
+		
+		//add to left panel
 		leftPanel.add(diceAndButton);
 		leftPanel.setAlignmentY(Container.CENTER_ALIGNMENT);
+
+		//create scaled background image and place on pane
+		Image scaled = backgroundIcon.getImage().getScaledInstance(691, 600,Image.SCALE_DEFAULT);
+		backgroundIcon = new ImageIcon(scaled);
+		JLabel background = new JLabel(backgroundIcon);
+		background.setBounds(10, 10, 700, 600);
+		boardPane = new JLayeredPane();
+		boardPane.setPreferredSize(new Dimension(800, 600));
+		boardPane.add(background,new Integer(1));
 		
-		
-		if (playerNum == 2){
-			buttonPanel.setVisible(false);
-			/*roll.setOpaque(false);
-			stop.setOpaque(false);//turn off buttons when it's opponent's turn.*/
-		}
-		numPieces = 0;
-		
-		
+		//set up columns
 		columns = new Column[12];
 		for (int i=2;i<=12;i++){
 			columns[i-2] = new Column(i);
 		}
 		
-		Image scaled = backgroundIcon.getImage().getScaledInstance(691, 600,Image.SCALE_DEFAULT);
-		backgroundIcon = new ImageIcon(scaled);
-		JLabel background = new JLabel(backgroundIcon);
-		
-		background.setBounds(10, 10, 700, 600);
-		boardPane = new JLayeredPane();
-		boardPane.setPreferredSize(new Dimension(800, 600));
-		
-		boardPane.add(background,new Integer(1));
-		
+		//place columns on board
 		for (int i=0;i<6;i++){
 			Column temp = columns[i];
 			temp.setBorder(BorderFactory.createLineBorder(Color.black, 3));
@@ -110,7 +106,6 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			boardPane.add(temp, new Integer(3));
 			
 		}
-		
 		for (int i=6;i<11;i++){
 			Column temp = columns[i];
 			temp.setBorder(BorderFactory.createLineBorder(Color.black, 3));
@@ -118,19 +113,40 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			boardPane.add(temp, new Integer(3));
 		}
 		
+		//set up column labels
+		colLabels = new JLabel[11];
+		for (int i=0; i<11;i++){
+			JLabel colNum = new JLabel(""+(i+2));
+			Font curFont = colNum.getFont();
+		    colNum.setFont(new Font(curFont.getFontName(), curFont.getStyle(), 16));
+			colNum.setForeground(Color.white);
+			colNum.setBounds(110+i*(47), 560, 25, 25);
+			boardPane.add(colNum, new Integer(5));
+			colLabels[i]= colNum;
+		}
+		
 		centrePanel.add(boardPane);
 		
+		//set up content pane
 		contentPane.add(leftPanel, BorderLayout.WEST);
 		contentPane.add(centrePanel,BorderLayout.CENTER);
 		contentPane.revalidate();
+		
+		//some game logic initialization
+		numPieces = 0;
+		turnTimer = new Timer(5,this);
+		if (playerNum == 2){
+			buttonPanel.setVisible(false);
+			turnTimer.start();
+		}
+		
+		
 		
 	}
 	
 	 public void mouseEntered(MouseEvent e) {
 		 Object source = e.getSource();
 	     if ((source.getClass()== Column.class) && (moveNum == 0)){
-	    	 //get column selected
-	    	 //remove highlight from columns that do not contain the selected column
 	    	 Column col = (Column)source;
 	       	 int colNum = col.getColNum();
 	       	 clearHighlight();
@@ -143,10 +159,11 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 	    	 Column col = (Column)source;
 	    	 int colNum = col.getColNum();
 	    	 clearHighlight();
-	    	 int[] available = availableColumns(d1, d2, d3, d4, moveChoice, colNum);
+	    	 highlightPosition(colNum);
+	    	 /*int[] available = availableColumns(d1, d2, d3, d4, moveChoice, colNum);
 	    	 for (int a : available) {
-	    		 highlightPosition(a);
-	    	 }
+	    		highlightPosition(a);
+	    	 }*/
 	    	 contentPane.revalidate();
 	     }
 	 }
@@ -162,10 +179,12 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			contentPane.revalidate();
 		}else if ((source.getClass()== Column.class) && (moveNum == 1)){
 			clearHighlight();
-			int[] available = availableColumns(d1, d2, d3, d4,moveChoice);
+			int colNum = ((Column)source).getColNum();
+	    	highlightPosition(colNum);
+			/*int[] available = availableColumns(d1, d2, d3, d4,moveChoice);
 			for (int a : available) {
 				highlightPosition(a);
-			}
+			}*/
 			contentPane.revalidate();
 	    }
 	}
@@ -210,9 +229,12 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 				//highlight doubles if exist.
 		}
 		else if (source == stop){
+			buttonPanel.setVisible(false);
 			connection.print("stop");
+			
 			String response = connection.read();
-			//if response == "ack"
+			if (response.equals("ack"))
+				turnTimer.start();
 				//remove roll and stop buttons
 				//while opponent turn{
 					//response = read
@@ -269,13 +291,52 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 				String response = connection.read();
 				if(!response.equals("ack"))
 					System.out.println("error sending move choice");
-				moveNum++;
+				buttonPanel.setVisible(true);
+				moveNum=0;
 					
 			}
 			//clear choices
 			//show button panel
 			contentPane.revalidate();
 			
+		}else if(source == turnTimer){
+			boolean opponentTurn = true;
+			//while (opponentTurn){
+				String response = connection.read();
+				if (response.equals("go")){
+					opponentTurn = false;
+					buttonPanel.setVisible(true);
+				}else if (response.equals("you lost")){
+					opponentTurn = false;
+					//show lost screen
+				}else{
+					Scanner rollScan = new Scanner(response).useDelimiter(",");
+					d1 = rollScan.nextInt();
+					d2 = rollScan.nextInt();
+					d3 = rollScan.nextInt();
+					d4 = rollScan.nextInt();
+					dice1.setIcon(new ImageIcon(d1+".jpg"));
+					dice2.setIcon(new ImageIcon(d2+".jpg"));
+					dice3.setIcon(new ImageIcon(d3+".jpg"));
+					dice4.setIcon(new ImageIcon(d4+".jpg"));
+					contentPane.revalidate();
+					response = connection.read();
+					rollScan = new Scanner(response).useDelimiter(",");
+					int choice1 = rollScan.nextInt();
+					int choice2 = rollScan.nextInt();
+					//show move on board
+					//if (columns[choice1-2].hasTemp(Column.OPPONENT))
+						//advance piece
+					//else if (columns[choice1-2].hasFinal(Column.OPPONENT))
+						//place piece
+					//else if (opponentpieces < 3)
+						//place piece at bottom
+						
+					//repeate for choice 2.
+				}
+				if (!opponentTurn)
+					turnTimer.stop();
+			//}
 		}
 	}
 	

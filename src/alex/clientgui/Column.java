@@ -5,7 +5,7 @@ import java.awt.*;
 
 public class Column extends JPanel {
 	public static final int USER = 1;
-	public final int OPPONENT = 2;
+	public static final int OPPONENT = 2;
 	private boolean conquered;
 	private PositionButton [] positions;
 	private final int columnNum;
