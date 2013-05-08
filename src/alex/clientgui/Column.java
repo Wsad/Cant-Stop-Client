@@ -104,6 +104,22 @@ public class Column extends JPanel {
 			return 0;
 	}
 	
+	public void setTemp(int PLAYER, int height){
+		if (PLAYER == USER){
+			tempHeight = height;
+		}else if (PLAYER == OPPONENT){
+			opponentTemp = height;
+		}
+	}
+	
+	public void setFinal(int PLAYER, int height){
+		if (PLAYER == USER){
+			finalHeight = height;
+		}else if (PLAYER == OPPONENT){
+			opponentFinal = height;
+		}
+	}
+	
 	public void highLight(int position){
 		try {
 			positions[position-1].setBackground(Color.yellow);
