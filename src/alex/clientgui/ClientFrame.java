@@ -5,9 +5,9 @@ import java.awt.event.*;
 
 import javax.swing.*;
 
-public class Client extends JFrame implements ActionListener {
+public class ClientFrame extends JFrame implements ActionListener {
 
-	public Client(){
+	public ClientFrame(){
 		Container contentPane = this.getContentPane();
 		StartPanel sp = new StartPanel();
 		sp.setBorder(BorderFactory.createEmptyBorder(90,90,90,90));
@@ -26,8 +26,8 @@ public class Client extends JFrame implements ActionListener {
 	 * @param args
 	 */
 	public static void main(String[] args) {
-		JFrame frame = new Client();
-		frame.setSize(550,400);
+		JFrame frame = new ClientFrame();
+		frame.setSize(877,761);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}
