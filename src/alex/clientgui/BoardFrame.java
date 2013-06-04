@@ -12,9 +12,9 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 	private Container contentPane;
 	
 	public BoardFrame(Container contentPaneIn){
+		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
-		contentPane.removeAll();
-		contentPane.revalidate();
+		
 		
 		Image scaled = backgroundIcon.getImage().getScaledInstance(691, 600,Image.SCALE_DEFAULT);
 		backgroundIcon = new ImageIcon(scaled);
@@ -44,6 +44,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 		
 		//boardPane.add(col,new Integer(2));
 		contentPane.add(boardPane);
+		contentPane.revalidate();
 		
 	}
 	

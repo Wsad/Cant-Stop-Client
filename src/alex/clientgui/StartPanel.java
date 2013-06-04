@@ -64,7 +64,7 @@ public class StartPanel extends JFrame implements ActionListener{
 		container.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Welcome!", TitledBorder.TOP, TitledBorder.CENTER));
 	
 		all.add(container);
-		all.setBorder(BorderFactory.createEmptyBorder(90,90,90,90));
+		all.setBorder(BorderFactory.createEmptyBorder(150,90,90,90));
 		all.setPreferredSize(new Dimension(500,500));
 		all.setMaximumSize(new Dimension (500,500));
 		
@@ -83,7 +83,7 @@ Object source = e.getSource();
 			//if response passes
 				//send password to server
 				//if password passes
-					new BoardFrame(contentPane);
+					MainMenuFrame mmf = new MainMenuFrame(contentPane);
 					this.setVisible(false);
 					this.dispose();
 				//else
