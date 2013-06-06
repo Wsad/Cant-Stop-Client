@@ -9,8 +9,11 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 	private JButton highScore;
 	private JButton logOut;
 	private Container contentPane;
+	private final ClientConnection connection;
 	
-	public MainMenuFrame(Container contentPaneIn){
+	public MainMenuFrame(Container contentPaneIn, ClientConnection connectionIn){
+		connection = connectionIn;
+		
 		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
 		
@@ -76,10 +79,10 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 		if (source == newGame){
 			//LoadingFrame lf = new LoadingFrame(contentPane);
 		}else if(source == highScore){
-			HighScoreFrame hsf = new HighScoreFrame(contentPane);
+			HighScoreFrame hsf = new HighScoreFrame(contentPane, connection);
 		}else if(source == logOut){
 			//close connection
-			StartPanel sp = new StartPanel(contentPane);
+			StartPanel sp = new StartPanel(contentPane, connection);
 		}
 
 	}

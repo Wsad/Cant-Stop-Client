@@ -12,8 +12,12 @@ public class StartPanel extends JFrame implements ActionListener{
 	private JTextField usernameIn;
 	private JTextField passwordIn;
 	private Container contentPane;
+	private static int invalidAttempts=0;
+	private final ClientConnection connection;
 	
-	public StartPanel(Container contentPaneIn){
+	public StartPanel(Container contentPaneIn, ClientConnection connectionIn){
+		connection = connectionIn;
+		
 		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
 		
@@ -49,6 +53,24 @@ public class StartPanel extends JFrame implements ActionListener{
 		buttonPanel.add(createUser);
 		buttonPanel.add(logIn);
 		
+		/* Create RollOver Effect!!
+		*
+		*
+		ImageIcon errorIcon = (ImageIcon) UIManager.getIcon("OptionPane.errorIcon");
+		Icon warnIcon =  UIManager.getIcon("OptionPane.warningIcon");
+		Icon splat = UIManager.getIcon("OptionPane.informationIcon");
+		createUser.setBorderPainted(false);
+		createUser.setBorder(null);
+		createUser.setFocusable(false);
+		createUser.setMargin(new Insets(0, 0, 0, 0));
+		createUser.setContentAreaFilled(false);
+		createUser.setIcon(errorIcon);
+		createUser.setRolloverIcon(splat);
+		createUser.setPressedIcon(warnIcon);
+		createUser.setDisabledIcon(warnIcon);
+		createUser.setRolloverEnabled(true);*/
+		
+		
 		error = new JLabel("");
 		UI.add(error);
 		UI.add(inputbox);
@@ -71,42 +93,62 @@ public class StartPanel extends JFrame implements ActionListener{
 		contentPaneIn.add(all);
 		contentPaneIn.revalidate();
 		
+		
 				
 	}
 	
 	public void actionPerformed(ActionEvent e){
-Object source = e.getSource();
+		Object source = e.getSource();
 		
-		if (source == logIn){
-			//send returning user name string to server
-			//receive server response 
-			//if response passes
-				//send password to server
-				//if password passes
-					MainMenuFrame mmf = new MainMenuFrame(contentPane);
-					this.setVisible(false);
-					this.dispose();
-				//else
-					//update error message
-					//increase login attempts
-					//if attempts ==3
-						//close connection
-			//else 
-				//User not found error
-					
+		if ((source == logIn) && (invalidAttempts < 3)){
+			String userName = usernameIn.getText();
+			if (userName.contains(",")){
+				error.setText("Username contains the illegal character ','");
+			}else{
+				connection.print("R," + userName);//send returning user name string to server
+				String response = connection.read();
+				if (response.equals("ack")){	//if server recognizes user name
+					String password = passwordIn.getText();
+					connection.print(password);	//send password to server
+					response = connection.read();
+					if (response.equals("ack")){//if valid password, go to next screen.
+						MainMenuFrame mmf = new MainMenuFrame(contentPane, connection);
+					}else{
+						error.setText(response.substring(4));
+						invalidAttempts++;
+					}
+				} else{
+					error.setText(response.substring(4));
+				}
+			}
 		}
 		else if (source == createUser){
-			//send new user name to server
-			//receive user name from server
-			//if user name passes
-				//check password for illegal symbols eg ','
-				//if password okay
-					//send password to server
-					//go to next page(main menu)
-				//else
-					//update error message("Invalid character in password. Try again.")
-			//else
-				//update error message ("User name is in use. Try again.")
+			String userName = usernameIn.getText();
+			if (userName.contains(",")){
+				error.setText("Username contains the illegal character ','");
+			}else{
+				connection.print("N," + userName);
+				String response = connection.read();
+				if (response.equals("ack")){
+					String password = passwordIn.getText();
+					connection.print(password);
+					response = connection.read();
+					if (response.equals("ack")){
+						MainMenuFrame mmf = new MainMenuFrame(contentPane, connection);
+					}else{
+						error.setText(response.substring(4));
+						invalidAttempts++;
+					}
+				} else{
+					error.setText(response.substring(4));
+				}
+			}
+		}
+		else if (((source == logIn) || (source == createUser)) && (invalidAttempts >= 3)){
+			error.setText("Too many invalid log in attempts: closing connection");
+			connection.close();
+			//this.setVisible(false);
+			//this.dispose();
 		}
 	}
 	

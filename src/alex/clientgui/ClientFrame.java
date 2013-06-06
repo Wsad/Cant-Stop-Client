@@ -10,16 +10,16 @@ public class ClientFrame extends JFrame {
 		private StartPanel sp;
 		private JButton logIn;
 		private JButton createUser;
-		//private ClientConnection connection; //commented out for testing.
-		//private final int port;
-		//private final String host;
+		private final ClientConnection connection; //commented out for testing.
+		private final int port;
+		private final String host;
 		
 	public ClientFrame(String hostIn, int portIn){
-		//host = hostIn;
-		//port = portIn;
-		//connection = new ClientConnection(host, port);
+		host = hostIn;
+		port = portIn;
+		connection = new ClientConnection(host, port);
 		contentPane = this.getContentPane();
-		sp = new StartPanel(contentPane);
+		sp = new StartPanel(contentPane, connection);
 	}
 
 	/**

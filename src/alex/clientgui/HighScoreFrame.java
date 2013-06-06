@@ -9,8 +9,11 @@ public class HighScoreFrame extends JFrame implements ActionListener {
 
 	private JButton toMain;
 	private Container contentPane;
+	private final ClientConnection connection;
 	
-	public HighScoreFrame(Container contentPaneIn){
+	public HighScoreFrame(Container contentPaneIn, ClientConnection connectionIn){
+		connection = connectionIn;
+		
 		contentPane = contentPaneIn;
 		contentPane.removeAll();
 		toMain = new JButton("Back to Main Menu");
@@ -21,7 +24,7 @@ public class HighScoreFrame extends JFrame implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		new StartPanel(contentPane);
+		new StartPanel(contentPane, connection);
 
 
 	}
