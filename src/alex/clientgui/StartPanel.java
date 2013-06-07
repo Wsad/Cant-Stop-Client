@@ -82,6 +82,7 @@ public class StartPanel extends JFrame implements ActionListener{
 		UI.setPreferredSize(new Dimension(300,160));
 		UI.setMaximumSize(new Dimension (300,160));
 		
+		
 		container.add(UI);
 		container.setBorder(BorderFactory.createTitledBorder(BorderFactory.createEtchedBorder(), "Welcome!", TitledBorder.TOP, TitledBorder.CENTER));
 	
@@ -92,6 +93,7 @@ public class StartPanel extends JFrame implements ActionListener{
 		
 		contentPaneIn.add(all);
 		contentPaneIn.revalidate();
+		
 		
 		
 				
@@ -109,15 +111,17 @@ public class StartPanel extends JFrame implements ActionListener{
 				String response = connection.read();
 				if (response.equals("ack")){	//if server recognizes user name
 					String password = passwordIn.getText();
+					System.out.println(password);
 					connection.print(password);	//send password to server
 					response = connection.read();
 					if (response.equals("ack")){//if valid password, go to next screen.
-						MainMenuFrame mmf = new MainMenuFrame(contentPane, connection);
+						BoardFrame mmf = new BoardFrame(contentPane, connection);
 					}else{
 						error.setText(response.substring(4));
 						invalidAttempts++;
 					}
 				} else{
+					System.out.println(response);
 					error.setText(response.substring(4));
 				}
 			}
@@ -134,6 +138,7 @@ public class StartPanel extends JFrame implements ActionListener{
 					connection.print(password);
 					response = connection.read();
 					if (response.equals("ack")){
+						error.setText("New Account Created");
 						MainMenuFrame mmf = new MainMenuFrame(contentPane, connection);
 					}else{
 						error.setText(response.substring(4));

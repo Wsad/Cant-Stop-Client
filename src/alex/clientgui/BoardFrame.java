@@ -7,14 +7,21 @@ import javax.swing.*;
 
 public class BoardFrame extends JFrame implements ActionListener, MouseMotionListener {
 	private JLayeredPane boardPane;
-	private JPanel col;
+	private Column[] columns;
 	private ImageIcon backgroundIcon = new ImageIcon("BoardBackground.png");
 	private Container contentPane;
+	private ClientConnection connection;
 	
-	public BoardFrame(Container contentPaneIn){
+	public BoardFrame(Container contentPaneIn, ClientConnection connectionIn){
+		
+		
 		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
 		
+		columns = new Column[12];
+		for (int i=2;i<=12;i++){
+			columns[i-2] = new Column(i);
+		}
 		
 		Image scaled = backgroundIcon.getImage().getScaledInstance(691, 600,Image.SCALE_DEFAULT);
 		backgroundIcon = new ImageIcon(scaled);
@@ -33,12 +40,17 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 		col.setBorder(BorderFactory.createLineBorder(Color.black, 3));
 		col.addMouseMotionListener(this);*/
 		
-		for (int i=0;i<11;i++){
-			JPanel temp = new JPanel();
-			temp.setBackground(Color.white);
+		for (int i=0;i<6;i++){
+			Column temp = columns[i];
 			temp.setBorder(BorderFactory.createLineBorder(Color.black, 3));
-			temp.addMouseMotionListener(this);
-			temp.setBounds(151+i*(47), 430, 35, 125);
+			temp.setBounds(151+i*(47), 430-(i*50), 35, 120+(i*50));
+			boardPane.add(temp, new Integer(2));
+		}
+		
+		for (int i=6;i<11;i++){
+			Column temp = columns[i];
+			temp.setBorder(BorderFactory.createLineBorder(Color.black, 3));
+			temp.setBounds(151+i*(47), 180+((i-5)*50), 35, 370-((i-5)*50));
 			boardPane.add(temp, new Integer(2));
 		}
 		

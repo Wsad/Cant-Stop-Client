@@ -20,6 +20,7 @@ public class ClientFrame extends JFrame {
 		connection = new ClientConnection(host, port);
 		contentPane = this.getContentPane();
 		sp = new StartPanel(contentPane, connection);
+		
 	}
 
 	/**
