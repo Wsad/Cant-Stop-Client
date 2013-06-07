@@ -42,6 +42,7 @@ public class StartPanel extends JFrame implements ActionListener{
 		createUser = new JButton("Create New Account");
 		logIn = new JButton("Log In");
 		logIn.addActionListener(this);
+		createUser.addActionListener(this);
 		
 		passBox.add(password);
 		passBox.add(passwordIn);
@@ -111,7 +112,6 @@ public class StartPanel extends JFrame implements ActionListener{
 				String response = connection.read();
 				if (response.equals("ack")){	//if server recognizes user name
 					String password = passwordIn.getText();
-					System.out.println(password);
 					connection.print(password);	//send password to server
 					response = connection.read();
 					if (response.equals("ack")){//if valid password, go to next screen.
@@ -121,7 +121,6 @@ public class StartPanel extends JFrame implements ActionListener{
 						invalidAttempts++;
 					}
 				} else{
-					System.out.println(response);
 					error.setText(response.substring(4));
 				}
 			}
