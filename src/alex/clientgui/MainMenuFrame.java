@@ -77,7 +77,7 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source == newGame){
-			//LoadingFrame lf = new LoadingFrame(contentPane);
+			StartPanel sp = new StartPanel(contentPane, connection);
 		}else if(source == highScore){
 			HighScoreFrame hsf = new HighScoreFrame(contentPane, connection);
 		}else if(source == logOut){

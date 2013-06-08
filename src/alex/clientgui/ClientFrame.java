@@ -7,7 +7,7 @@ import javax.swing.*;
 
 public class ClientFrame extends JFrame {
 		private Container contentPane;
-		private StartPanel sp;
+		private MainMenuFrame mmf;
 		private JButton logIn;
 		private JButton createUser;
 		private final ClientConnection connection; //commented out for testing.
@@ -19,7 +19,7 @@ public class ClientFrame extends JFrame {
 		port = portIn;
 		connection = new ClientConnection(host, port);
 		contentPane = this.getContentPane();
-		sp = new StartPanel(contentPane, connection);
+		mmf = new MainMenuFrame(contentPane, connection);
 		
 	}
 

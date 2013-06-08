@@ -102,7 +102,7 @@ public class StartPanel extends JFrame implements ActionListener{
 	
 	public void actionPerformed(ActionEvent e){
 		Object source = e.getSource();
-		
+		LoadingFrame lf = null;
 		if ((source == logIn) && (invalidAttempts < 3)){
 			String userName = usernameIn.getText();
 			if (userName.contains(",")){
@@ -115,7 +115,12 @@ public class StartPanel extends JFrame implements ActionListener{
 					connection.print(password);	//send password to server
 					response = connection.read();
 					if (response.equals("ack")){//if valid password, go to next screen.
-						BoardFrame mmf = new BoardFrame(contentPane, connection);
+						lf = new LoadingFrame(contentPane, connection);
+						contentPane.revalidate();
+						//int playerNum = Integer.parseInt(connection.read());
+						//System.out.println(playerNum);
+						//lf.ready();
+						
 					}else{
 						error.setText(response.substring(4));
 						invalidAttempts++;
@@ -138,7 +143,10 @@ public class StartPanel extends JFrame implements ActionListener{
 					response = connection.read();
 					if (response.equals("ack")){
 						error.setText("New Account Created");
-						MainMenuFrame mmf = new MainMenuFrame(contentPane, connection);
+						lf = new LoadingFrame(contentPane, connection);
+						/*int playerNum = Integer.parseInt(connection.read());
+						System.out.println(playerNum);
+						lf.ready(playerNum);*/
 					}else{
 						error.setText(response.substring(4));
 						invalidAttempts++;
@@ -154,6 +162,9 @@ public class StartPanel extends JFrame implements ActionListener{
 			//this.setVisible(false);
 			//this.dispose();
 		}
+		/*int playerNum = Integer.parseInt(connection.read());
+		System.out.println(playerNum);
+		lf.ready(playerNum);*/
 	}
 	
 	public JButton getLogin(){
