@@ -28,7 +28,7 @@ public class ClientFrame extends JFrame {
 	 */
 	public static void main(String[] args) {
 		JFrame frame = new ClientFrame(args[0], Integer.parseInt(args[1]));
-		frame.setSize(800,600);
+		frame.setSize(1000,700);
 		frame.setVisible(true);
 		frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	}

@@ -64,6 +64,10 @@ public class Column extends JPanel {
 		conquered = value;
 	}
 	
+	public PositionButton [] getPositionArr(){
+		return positions;
+	}
+	
 	public boolean hasTemp(int PLAYER){
 		if ((PLAYER == USER)&&(tempHeight > 0)){
 			return true;

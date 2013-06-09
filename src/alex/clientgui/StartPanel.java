@@ -73,6 +73,10 @@ public class StartPanel extends JFrame implements ActionListener{
 		
 		
 		error = new JLabel("");
+		error.setSize(200, 40);
+		Font curFont = error.getFont();
+	    error.setFont(new Font(curFont.getFontName(), curFont.getStyle(), 10));
+		error.setAlignmentX(Container.CENTER_ALIGNMENT);
 		UI.add(error);
 		UI.add(inputbox);
 		UI.add(passBox);
@@ -107,6 +111,7 @@ public class StartPanel extends JFrame implements ActionListener{
 			String userName = usernameIn.getText();
 			if (userName.contains(",")){
 				error.setText("Username contains the illegal character ','");
+				error.setForeground(Color.RED);
 			}else{
 				connection.print("R," + userName);//send returning user name string to server
 				String response = connection.read();
@@ -122,10 +127,12 @@ public class StartPanel extends JFrame implements ActionListener{
 						//lf.ready();
 						
 					}else{
-						error.setText(response.substring(4));
 						invalidAttempts++;
+						error.setForeground(Color.RED);
+						error.setText(response.substring(4)+" ("+invalidAttempts+ "of 3 Attempts)");
 					}
 				} else{
+					error.setForeground(Color.RED);
 					error.setText(response.substring(4));
 				}
 			}
@@ -142,22 +149,26 @@ public class StartPanel extends JFrame implements ActionListener{
 					connection.print(password);
 					response = connection.read();
 					if (response.equals("ack")){
+						error.setForeground(Color.GREEN);
 						error.setText("New Account Created");
 						lf = new LoadingFrame(contentPane, connection);
 						/*int playerNum = Integer.parseInt(connection.read());
 						System.out.println(playerNum);
 						lf.ready(playerNum);*/
 					}else{
+						error.setForeground(Color.RED);
 						error.setText(response.substring(4));
 						invalidAttempts++;
 					}
 				} else{
+					error.setForeground(Color.RED);
 					error.setText(response.substring(4));
 				}
 			}
 		}
 		else if (((source == logIn) || (source == createUser)) && (invalidAttempts >= 3)){
-			error.setText("Too many invalid log in attempts: closing connection");
+			error.setForeground(Color.RED);
+			error.setText("Too many invalid log in attempts: disconnecting");
 			connection.close();
 			//this.setVisible(false);
 			//this.dispose();
