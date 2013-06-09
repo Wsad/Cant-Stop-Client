@@ -4,15 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 
 public class Column extends JPanel {
-	public final int USER = 1;
+	public static final int USER = 1;
 	public final int OPPONENT = 2;
 	private boolean conquered;
-	private JButton [] positions;
+	private PositionButton [] positions;
 	private final int columnNum;
 	private int tempHeight, finalHeight;
 	private int opponentTemp, opponentFinal;
 	
 	public Column(int colNumIn){
+		columnNum = colNumIn;
 		tempHeight = 0;
 		finalHeight = 0;
 		opponentTemp = 0;
@@ -21,33 +22,33 @@ public class Column extends JPanel {
 		//set up number of buttons on column.
 		for (int i =0; i <6; i++){
 			if (colNumIn == (i+2)){
-				positions = new JButton[3+(2*i)];
+				positions = new PositionButton[3+(2*i)];
 				this.setLayout(new GridLayout(3+(2*i),1));
 				break;
 			}
 		}
 		for (int i=6;i<11;i++){
 			if (colNumIn == (i+2)){
-				positions = new JButton[13-(2*(i-5))];
+				positions = new PositionButton[13-(2*(i-5))];
 				this.setLayout(new GridLayout(13-(2*(i-5)),1));
 				break;
 			}
-		}
+		}		
 		//initialize buttons on column.
 		for (int i=0;i< positions.length; i++){
-			JButton pos = new JButton();
-			//pos.setMinimumSize(new Dimension(47,28));
-			//pos.setMaximumSize(new Dimension(47,40));
-			//pos.setPreferredSize(new Dimension(47,34));
+			PositionButton pos = new PositionButton(columnNum,(positions.length-i));
+			/*pos.setMinimumSize(new Dimension(47,28));
+			pos.setMaximumSize(new Dimension(47,40));
+			pos.setPreferredSize(new Dimension(47,34));
 			pos.setRolloverEnabled(false);
-			pos.setBackground(Color.white);
+			pos.setBackground(Color.white);*/
 			positions[(positions.length-1)-i] = pos;//start from bottom of column
 			this.add(pos);
 		}
-		columnNum = colNumIn;
+		
 	}
 	
-	public JButton getPosButton(int height){
+	public PositionButton getPosButton(int height){
 		return positions[height-1];
 	}
 	
@@ -106,6 +107,13 @@ public class Column extends JPanel {
 		}catch (ArrayIndexOutOfBoundsException e){
 			System.out.println("Unable to highlight column: Array Index out of bounds ["+(position-1)+"]");
 			System.out.println(e.getMessage());
+		}
+	}
+	
+	public void removeHighlight(){
+		for (PositionButton p : positions){
+			p.setBackground(Color.white);
+			p.setRolloverEnabled(false); 
 		}
 	}
 }

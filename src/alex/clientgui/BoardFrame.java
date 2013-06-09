@@ -16,6 +16,10 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 	private JPanel buttonPanel;
 	private JButton roll;
 	private JButton stop;
+	private int numPieces;
+	private String move;
+	private int moveNum;
+	private int d1,d2,d3,d4;
 	
 	public BoardFrame(Container contentPaneIn, ClientConnection connectionIn, int playerNum){
 		connection = connectionIn;
@@ -44,8 +48,9 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 		leftPanel.add(buttonPanel);
 		
 		if (playerNum == 2){
-			buttonPanel.setVisible(false);//turn off buttons when it's opponent's turn.
+			buttonPanel.setOpaque(true);//turn off buttons when it's opponent's turn.
 		}
+		numPieces = 0;
 		
 		
 		columns = new Column[12];
@@ -62,13 +67,6 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 		boardPane.setPreferredSize(new Dimension(800, 600));
 		
 		boardPane.add(background,new Integer(1));
-		
-		/*/Example column
-		col = new JPanel();
-		col.setBounds(150, 430, 45, 125);
-		col.setBackground(Color.white);
-		col.setBorder(BorderFactory.createLineBorder(Color.black, 3));
-		col.addMouseMotionListener(this);*/
 		
 		for (int i=0;i<6;i++){
 			Column temp = columns[i];
@@ -97,12 +95,16 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 	    	 //get column selected
 	    	 //remove highlight from columns that do not contain the selected column
 	    	 Column col = (Column)source;
-	       	 int ySize = 120+(col.getColNum()-2)*50;
-	       	 int xSize = 35;
-	       	 backLight(col.getX(),col.getY(),xSize,ySize);
+	       	 int colNum = col.getColNum();
+	       	 clearHighlight();
+	       	 int[] available = availableColumns(d1,d2,d3,d4,colNum);
+	       	 for (int a : available){
+	       		 highlightPosition(a);
+	       	 }
+	       	 contentPane.revalidate();
 	     }
 	 }
-	
+	 
 	public void backLight(int xPos, int yPos, int xSize, int ySize){
 		JPanel light = new JPanel();
 		light.setBounds(xPos -10, yPos - 10, xSize + 20, ySize + 20);
@@ -117,45 +119,113 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source == roll){
+			move = "";
+			moveNum = 0;
 			connection.print("roll");
-			buttonPanel.setVisible(false);
+			buttonPanel.setOpaque(false);
 			String roll = connection.read();
 			Scanner rollScan = new Scanner(roll).useDelimiter(",");
-			boolean i = rollScan.hasNextInt();
-			int d1 = rollScan.nextInt();//throwing input mismatch?
-			int d2 = rollScan.nextInt();
-			int d3 = rollScan.nextInt();
-			int d4 = rollScan.nextInt();
+			d1 = rollScan.nextInt();
+			d2 = rollScan.nextInt();
+			d3 = rollScan.nextInt();
+			d4 = rollScan.nextInt();
 			//set roll values to 4 ints
 			//create list of integers
 			int[] availableCol = availableColumns(d1,d2,d3,d4);//add combinations of roll values into list (ignore duplicates) (maybe using sets) 1,2,3,4
 			for (int colNum : availableCol)
 				highlightPosition(colNum);
-			//highlight doubles if exist.
+			//create list of all possible
+			//if above list.length > the list length ignoring doubles
+				//find duplicate columns
+				//highlight doubles if exist.
 		}
 		else if (source == stop){
 			
 		}
-		else if ((source.getClass() == JButton.class) && ((source != stop)||(source != roll))){
-			JButton but = (JButton)source;
-			System.out.println("button sent event.");
+		else if (source.getClass() == PositionButton.class){
+			PositionButton button = (PositionButton)source;
+			int height = button.getColHeight();
+			int col = button.getColumn();
+			//if col.hasTemp(user)s
+				//gamepiece.move(col,height)
+			//else
+				//new gamepiece(col,height)
+				//numPieces++;
+			Point pt = button.getLocation();
+			
+			int x = pt.x;
+			int y = pt.y;
+			
+			//JLabel piece = new JLabel("1");
+			//piece.setBackground(new Color(0,0,0,0));
+			//piece.setBounds(y,boardPane.getHeight()- x, 50,50);
+			//boardPane.add(piece, new Integer(5));
+			if (moveNum == 0){
+				move = col+",";
+				moveNum++;
+				clearHighlight();
+				
+				int [] available = availableColumns(d1,d2,d3,d4,col);
+				for (int column : available){
+					highlightPosition(column);
+				}
+				//remove highlight from already chosen position.
+				columns[col-2].getPosButton(height).setBackground(Color.white);
+				columns[col-2].getPosButton(height).setRolloverEnabled(false);
+				columns[col-2].removeMouseMotionListener(this);
+				
+				contentPane.revalidate();
+			}else if (moveNum == 1){
+				clearHighlight();
+				contentPane.revalidate();
+				move +=""+col;
+				connection.print(move);
+				String response = connection.read();
+				if(!response.equals("ack"))
+					System.out.println("error sending move choice");
+				moveNum++;
+					
+			}
+			//clear choices
+			//show button panel
+			contentPane.revalidate();
+			
+		}
+	}
+	
+	public void clearHighlight(){
+		for (int i=2;i<=12;i++){
+			Column col = columns[i-2];
+			try {
+				MouseMotionListener [] colListener = col.getMouseMotionListeners();
+				col.removeMouseMotionListener(this);
+			}
+			catch(NullPointerException e){	
+			}
+			col.removeHighlight();
 		}
 	}
 	
 	public void highlightPosition(int colNum){
 		Column col = columns[colNum-2];
 		if (!col.getConquered()){
-			col.addMouseMotionListener(this);
-			if (col.hasTemp(1/*USER*/)){
-				//highlight position above temp
-				col.highLight(col.getTemp(col.USER));
-				col.getPosButton(col.getTemp(col.USER)-1).addActionListener(this);
-			}else if (col.hasFinal(1/*USER*/)){
-				col.highLight(col.getFinal(col.USER));
-				col.getPosButton(col.getFinal(col.USER)-1).addActionListener(this);
-			}else
-				col.highLight(1);
-				col.getPosButton(1).addActionListener(this);
+			if (numPieces < 3){
+				col.addMouseMotionListener(this);
+				if (col.hasTemp(Column.USER)){
+					//highlight position above temp
+					col.highLight(col.getTemp(Column.USER));
+					col.getPosButton(col.getTemp(Column.USER)-1).addActionListener(this);
+				}else if (col.hasFinal(Column.USER)){
+					col.highLight(col.getFinal(Column.USER));
+					col.getPosButton(col.getFinal(Column.USER)-1).addActionListener(this);
+				}else
+					col.highLight(1);
+					col.getPosButton(1).addActionListener(this);
+			}else if (col.hasTemp(Column.USER)){
+				col.addMouseMotionListener(this);
+				col.highLight(col.getTemp(Column.USER));
+				col.getPosButton(col.getTemp(Column.USER)-1).addActionListener(this);
+			}
 		}
 	}
 	
@@ -166,8 +236,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseMotionLis
 	 * @param d3 Value of third die
 	 * @param d4 Value of fourth die
 	 * @param selected The selected column
-	 * @return An array of integers representing the remaining moves if the column is selected
-	 */
+	 * @return An array of integers representing the remaining moves if the column is selected*/
 	public int[] availableColumns(int d1, int d2, int d3, int d4, int selected){
 		HashSet<Integer> colSet = new HashSet<Integer>();
 		int split1 = d1 + d4; 
