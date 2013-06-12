@@ -324,6 +324,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			clearBacklight();
 			connection.print("stop");
 			//copy temp pieces into final collection
+			//setPiecesToFinal(GamePiece.USER);
 			for (int i =0; i<numPieces;i++){
 				tempUserPieces[i].setFinal(GamePiece.USER);
 				boolean changed = false;
@@ -346,6 +347,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 					 	boardPane.add(fin, new Integer(7));
 					}
 				}
+				
 				//track pieces on column
 				Column col = columns[tempUserPieces[i].getCol()-2];
 				col.setFinal(Column.USER, col.getTemp(Column.USER));
@@ -499,9 +501,10 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			String response = connection.read();
 			if (response.equals("go")){
 				//set opponents temp to final
-				//check if any pieces at top of column (set conquered)
-				//draw pieces.
-				//numOpPieces =0;
+				setPiecesToFinal(GamePiece.OPPONENT);
+				updateFinalCol(GamePiece.OPPONENT);
+				//clearTempPieces(GamePiece.OPPONENT);
+				numOpPieces =0;
 				dialogue.setText("It is your turn!");
 				opponentTurn = false;
 				buttonPanel.setVisible(true);
@@ -534,8 +537,8 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 				contentPane.revalidate();
 				response = connection.read();
 				if (response.equals("go")){//in case opponent craps out
-					//clear opponent's temp pieces
-					//numOpPieces = 0;
+					//clearTempPieces(GamePiece.OPPONENT);
+					numOpPieces = 0;
 					dialogue.setText("It is your turn!");
 					opponentTurn = false;
 					buttonPanel.setVisible(true);
@@ -572,7 +575,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 							}
 						}
 					}
-					//draw pieces on board
+					drawTempPieces(GamePiece.OPPONENT);
 					//update RH Panel
 				}
 			}
@@ -597,6 +600,125 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 					c.setBackground(new Color(255,255,0,alpha));
 				}
 				fadeOutTimer.stop();
+			}
+		}
+	}
+	
+	public void updateFinalCol(int PLAYER){
+		if (PLAYER==1){
+			for (GamePiece p : finalUserPieces){
+				Column col = columns[p.getCol()-2];
+				col.setFinal(Column.USER, col.getTemp(Column.USER));
+				col.setTemp(Column.USER, 0);
+				if (col.getFinal(Column.USER) == col.getColHeight()){
+					col.setConquered(true);
+					JLabel flag = new JLabel(new ImageIcon("userFlag.jpg"));
+					flag.setBounds(col.getX()+10, col.getY()-25,30,30);
+					boardPane.add(flag, new Integer(7));
+				}
+			}
+		}else if (PLAYER == 2){
+			for (GamePiece p : finalOpPieces){
+				Column col = columns[p.getCol()-2];
+				col.setFinal(Column.OPPONENT, col.getTemp(Column.OPPONENT));
+				col.setTemp(Column.OPPONENT, 0);
+				if (col.getFinal(Column.OPPONENT) == col.getColHeight()){
+					col.setConquered(true);
+					JLabel flag = new JLabel(new ImageIcon("opponentFlag.jpg"));
+					flag.setBounds(col.getX()+10, col.getY()-25,30,30);
+					boardPane.add(flag, new Integer(7));
+				}
+			}
+		}
+	}
+	
+	public void setPiecesToFinal(int PLAYER){
+		if (PLAYER == 1){
+			for (int i =0; i<numPieces;i++){
+				tempUserPieces[i].setFinal(GamePiece.USER);
+				boolean changed = false;
+				for (GamePiece fin: finalUserPieces){
+					if (fin.getCol() == tempUserPieces[i].getCol()){
+						fin.setYPixels(tempUserPieces[i].getYPos());
+						boardPane.remove(fin);
+						fin.setBounds(fin.getXPos(), fin.getYPos(), 15, 28);
+						fin.setFinal(GamePiece.USER);
+						boardPane.add(fin,new Integer(8));
+					 	changed = true;
+					}
+				}
+				if (!changed)
+					finalUserPieces.add(tempUserPieces[i]);
+				boardPane.remove(tempUserPieces[i]);
+				for (GamePiece fin: finalUserPieces){
+					if (fin.getCol() == tempUserPieces[i].getCol()){
+						changed = true;
+					 	fin.setBounds(fin.getXPos(),fin.getYPos(), 15,28);
+					 	boardPane.add(fin, new Integer(7));
+					}
+				}
+			}
+		}
+		else if (PLAYER == 2){
+			for (int i =0; i< numOpPieces;i++){
+				tempOpPieces[i].setFinal(GamePiece.OPPONENT);
+				boolean changed = false;
+				for (GamePiece fin: finalOpPieces){
+					if (fin.getCol() == tempOpPieces[i].getCol()){
+						fin.setYPixels(tempOpPieces[i].getYPos());
+						boardPane.remove(fin);
+						fin.setBounds(fin.getXPos()+15, fin.getYPos(), 15, 28);
+						boardPane.add(fin,new Integer(8));
+					 	changed = true;
+					}
+				}
+				if (!changed)
+					finalOpPieces.add(tempOpPieces[i]);
+				//boardPane.remove(tempOpPieces[i]);
+				for (GamePiece fin: finalOpPieces){
+					if (fin.getCol() == tempOpPieces[i].getCol()){
+						changed = true;
+					 	fin.setBounds(fin.getXPos()+15,fin.getYPos(), 15,28);
+					 	boardPane.add(fin, new Integer(8));
+					}
+				}
+			}
+			boardPane.revalidate();
+		}
+	}
+	
+	public void clearTempPieces(int PLAYER){
+		if (PLAYER == 1){
+			for (int i=0; i < numPieces; i++){
+				boardPane.remove(tempUserPieces[i]);
+				columns[tempUserPieces[i].getCol()-2].setTemp(Column.USER, 0);
+				tempUserPieces[i]=null;
+				
+			}
+		}
+		else if (PLAYER == 2){
+			for (int i =0; i < numOpPieces; i++){
+				GamePiece p = tempOpPieces[i];
+				boardPane.remove(p);
+				columns[tempOpPieces[i].getCol()-2].setTemp(Column.OPPONENT, 0);
+				//tempOpPieces[i] = null;
+			}
+		}
+	}
+	
+	public void drawTempPieces(int PLAYER){
+		if (PLAYER == 1){
+			for (int i=0; i < numPieces; i++){
+				GamePiece p = tempUserPieces[i];
+				p.setBounds(p.getXPos(), p.getYPos(), 15, 28);
+				boardPane.add(p, new Integer(7));
+			}
+		}
+		else if (PLAYER == 2){
+			for (int i =0; i < numOpPieces; i++){
+				GamePiece p = tempOpPieces[i];
+				p.setBounds(p.getXPos()+15, p.getYPos(), 15, 28);
+				boardPane.add(p, new Integer(7));
 			}
 		}
 	}

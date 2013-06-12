@@ -6,7 +6,7 @@ import javax.swing.*;
 
 public class MainMenuFrame extends JFrame implements ActionListener {
 	private JButton newGame;
-	private JButton highScore;
+	private JButton rules;
 	private JButton logOut;
 	private int PORT;
 	private String HOST;
@@ -33,24 +33,24 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 		//buttonBoard.setLayout(new BoxLayout(buttonBoard,BoxLayout.PAGE_AXIS));
 		
 		newGame = new JButton("New Game");
-		highScore = new JButton("High Score");
+		rules = new JButton("Game Rules");
 		logOut = new JButton("Log Out");
 		
 		newGame.addActionListener(this);
-		highScore.addActionListener(this);
+		rules.addActionListener(this);
 		logOut.addActionListener(this);
 		
 		newGame.setAlignmentX(Component.CENTER_ALIGNMENT);
-		highScore.setAlignmentX(Component.CENTER_ALIGNMENT);
+		rules.setAlignmentX(Component.CENTER_ALIGNMENT);
 		logOut.setAlignmentX(Component.CENTER_ALIGNMENT);
 		
 		newGame.setPreferredSize(new Dimension(200,50));
 		newGame.setMaximumSize(new Dimension(200,50));
 		newGame.setMinimumSize(new Dimension(200,50));
 		
-		highScore.setPreferredSize(new Dimension(200,50));
-		highScore.setMaximumSize(new Dimension(200,50));
-		highScore.setMinimumSize(new Dimension(200,50));
+		rules.setPreferredSize(new Dimension(200,50));
+		rules.setMaximumSize(new Dimension(200,50));
+		rules.setMinimumSize(new Dimension(200,50));
 		
 		logOut.setPreferredSize(new Dimension(200,50));
 		logOut.setMaximumSize(new Dimension(200,50));
@@ -59,7 +59,7 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 		buttonPanel.add(Box.createRigidArea(new Dimension(0,7)));
 		buttonPanel.add(newGame);
 		buttonPanel.add(Box.createRigidArea(new Dimension(0,10)));
-		buttonPanel.add(highScore);
+		buttonPanel.add(rules);
 		buttonPanel.add(Box.createRigidArea(new Dimension(0,10)));
 		buttonPanel.add(logOut);
 		
@@ -86,8 +86,8 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 		Object source = e.getSource();
 		if (source == newGame){
 			StartPanel sp = new StartPanel(contentPane, HOST, PORT);
-		}else if(source == highScore){
-			HighScoreFrame hsf = new HighScoreFrame(contentPane, connection);
+		}else if(source == rules){
+			RulesPanel rp = new RulesPanel(contentPane, connection);
 		}else if(source == logOut){
 			//close connection
 			StartPanel sp = new StartPanel(contentPane, HOST, PORT);
