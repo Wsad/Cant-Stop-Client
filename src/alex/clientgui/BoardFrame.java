@@ -16,19 +16,20 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 	private ImageIcon backgroundIcon = new ImageIcon("BoardBackground.png");
 	private Container contentPane;
 	private ClientConnection connection;
-	private JPanel buttonPanel;
+	private JPanel buttonPanel, backlight, GamePiecePanel;
 	private JButton roll;
 	private JButton stop;
 	private JLabel dice1, dice2, dice3, dice4;
 	//game logic
-	private int numPieces;
+	private int numPieces, numOpPieces;
 	private String move;
-	private int moveNum;
+	private int moveNum, moveChoice;
 	private int d1,d2,d3,d4;
-	private int moveChoice;
-	private Timer turnTimer;
-	private GamePiece [] tempUserPieces= new GamePiece[3];
-	private ArrayList<GamePiece> finalUserPieces = new ArrayList<GamePiece>();
+	private int alpha;
+	private boolean lightOn;
+	private Timer turnTimer, fadeInTimer, fadeOutTimer;
+	private GamePiece [] tempUserPieces, tempOpPieces;
+	private ArrayList<GamePiece> finalUserPieces, finalOpPieces;
 	private PositionButton doubleMove;
 	
 	public BoardFrame(Container contentPaneIn, ClientConnection connectionIn, int playerNum){
@@ -93,7 +94,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		//add to right panel
 		JPanel EmptyPanel = new JPanel();
 		EmptyPanel.setBorder(BorderFactory.createEmptyBorder(100, 10, 100, 10));
-		JPanel GamePiecePanel = new JPanel();
+		GamePiecePanel = new JPanel();
 		GamePiecePanel.setBorder(BorderFactory.createLineBorder(Color.BLACK, 3));
 		GamePiecePanel.setLayout(new BoxLayout(GamePiecePanel,BoxLayout.LINE_AXIS));
 		if (playerNum == 1){
@@ -103,6 +104,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			}
 			GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
 		}
+		
 		else if (playerNum == 2){
 			for (int i =0; i <3 ; i++){
 				GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
@@ -137,13 +139,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			temp.setBounds(101+i*(47), 550-35*(i*2+3), 35, 35*(i*2+3)+6);
 			boardPane.add(temp, new Integer(3));
 			
-		}
-		/*columns[0].setBounds(101, 439, 35, 111);
-		boardPane.add(columns[0], new Integer(3));
-		columns[1].setBounds(148, 369, 35, 181);
-		boardPane.add(columns[1], new Integer(3));*/
-		//this.pack();
-		
+		}		
 		for (int i=6;i<11;i++){
 			Column temp = columns[i];
 			temp.setBorder(BorderFactory.createLineBorder(Color.black, 3));
@@ -166,7 +162,14 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		centrePanel.add(boardPane);
 		
 		//some game logic initialization
+		tempUserPieces = new GamePiece[3];
+		tempOpPieces= new GamePiece[3];
+		finalUserPieces = new ArrayList<GamePiece>();
+		finalOpPieces = new ArrayList<GamePiece>();
 		numPieces = 0;
+		numOpPieces = 0;
+		fadeInTimer = new Timer(50,this);
+		fadeOutTimer = new Timer(50,this);
 		turnTimer = new Timer(5,this);
 		if (playerNum == 2){
 			buttonPanel.setVisible(false);
@@ -175,6 +178,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		}else
 			dialogue = new JLabel("You Are Player 1: It is your turn!");
 		
+		//Dialogue Box
 		JPanel dialogueBox = new JPanel();
 		dialogueBox.setLayout(new BoxLayout(dialogueBox,BoxLayout.PAGE_AXIS));
 		dialogue.setAlignmentX(Container.CENTER_ALIGNMENT);
@@ -182,6 +186,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		Font dFont = dialogue.getFont();
 		dialogue.setFont(new Font(dFont.getFontName(), dFont.getStyle(), 20));
 		dialogueBox.add(dialogue);
+		
 		//set up content pane
 		contentPane.add(leftPanel, BorderLayout.WEST);
 		contentPane.add(centrePanel,BorderLayout.CENTER);
@@ -196,7 +201,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		 Object source = e.getSource();
 	     if ((source.getClass()== Column.class) && (moveNum == 0)){
 	    	 Column col = (Column)source;
-	    	 backLight(col.getX(),col.getY(),col.getWidth(),col.getHeight());
+	    	 //backlight(col.getX(),col.getY(),col.getWidth(),col.getHeight());
 	       	 int colNum = col.getColNum();
 	       	 clearHighlight();
 	       	 int[] available = availableColumns(d1,d2,d3,d4,colNum);
@@ -206,6 +211,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 	       	 contentPane.revalidate();
 	     }else if ((source.getClass()== Column.class) && (moveNum == 1)){
 	    	 Column col = (Column)source;
+	    	 //backlight(col.getX(),col.getY(),col.getWidth(),col.getHeight());
 	    	 int colNum = col.getColNum();
 	    	 clearHighlight();
 	    	 highlightPosition(colNum);
@@ -218,31 +224,49 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 	 }
 	 
 	public void mouseExited(MouseEvent e) {
+		java.awt.Point p = new java.awt.Point(e.getLocationOnScreen());
+		SwingUtilities.convertPointFromScreen(p, e.getComponent());
+		if (e.getComponent().contains(p)) {
+			return;
+		}
 		Object source = e.getSource();
-	     if ((source.getClass() == Column.class) && (moveNum == 0)) {
+		if ((source.getClass() == Column.class) && (moveNum == 0)) {
+			//clearBacklight();
 			clearHighlight();
 			int[] available = availableColumns(d1, d2, d3, d4);
 			for (int a : available) {
 				highlightPosition(a);
 			}
 			contentPane.revalidate();
-		}else if ((source.getClass()== Column.class) && (moveNum == 1)){
+		} else if ((source.getClass() == Column.class) && (moveNum == 1)) {
+			//clearBacklight();
 			clearHighlight();
-			int colNum = ((Column)source).getColNum();
-	    	highlightPosition(colNum);
-			/*int[] available = availableColumns(d1, d2, d3, d4,moveChoice);
-			for (int a : available) {
-				highlightPosition(a);
-			}*/
+			int colNum = ((Column) source).getColNum();
+			highlightPosition(colNum);
+			/*
+			 * int[] available = availableColumns(d1, d2, d3, d4,moveChoice);
+			 * for (int a : available) { highlightPosition(a); }
+			 */
 			contentPane.revalidate();
-	    }
+		}
 	}
-	 
-	public void backLight(int xPos, int yPos, int xSize, int ySize){
-		JPanel light = new JPanel();
-		light.setBounds(xPos -10, yPos - 10, xSize + 20, ySize + 20);
-		light.setBackground(Color.yellow);
-		boardPane.add(light, new Integer(2));
+	
+	public void clearBacklight(){
+		alpha = 255;
+		lightOn = false;
+		fadeInTimer.stop();
+		fadeOutTimer.start();
+	}
+	
+	public void backlight(int xPos, int yPos, int xSize, int ySize){
+		alpha = 0;
+		lightOn = true;
+		fadeOutTimer.stop();
+		fadeInTimer.start();
+		backlight = new TransparentPanel();
+		backlight.setBackground(new Color(255,255,0,alpha));
+		backlight.setBounds(xPos -10, yPos - 10, xSize + 20, ySize + 20);
+		boardPane.add(backlight, new Integer(2));
 		
 	}
 	public void mouseClicked(MouseEvent e) {}
@@ -272,10 +296,7 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 			for (int colNum : availableCol)
 				highlightPosition(colNum);
 			
-			/*int doublePos = doubleMove();
-			if (doublePos > 0)
-				highlightDouble(doublePos);
-				//create local doublebutton var.*/
+			clearBacklight();
 			
 			boolean canMove = canMove(availableCol);
 			if (!canMove){
@@ -297,14 +318,10 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 				contentPane.revalidate();
 				turnTimer.start();
 			}
-				
-			//create list of all possible
-			//if above list.length > the list length ignoring doubles
-				//find duplicate columns
-				//highlight doubles if exist.
 		}
 		else if (source == stop){
 			buttonPanel.setVisible(false);
+			clearBacklight();
 			connection.print("stop");
 			//copy temp pieces into final collection
 			for (int i =0; i<numPieces;i++){
@@ -470,20 +487,38 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 		}else if(source == turnTimer){
 			boolean opponentTurn = true;
 			dialogue.setText("It is your opponent's turn!");
+			
 			//set piece panel to opponent color.
+			GamePiecePanel.removeAll();
+			for (int i =0; i <3; i++){
+				GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
+				GamePiecePanel.add(new GamePiece(GamePiece.OPPONENT));
+			}
+			GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
+			
 			String response = connection.read();
 			if (response.equals("go")){
+				//set opponents temp to final
+				//check if any pieces at top of column (set conquered)
+				//draw pieces.
+				//numOpPieces =0;
 				dialogue.setText("It is your turn!");
 				opponentTurn = false;
 				buttonPanel.setVisible(true);
-				//numPieces =0;
+				numPieces =0;
 				//set piece panel to your color.
+				GamePiecePanel.removeAll();
+				for (int i =0; i <3; i++){
+					GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
+					GamePiecePanel.add(new GamePiece(GamePiece.USER));
+				}
+				GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
 			}else if ((response.equals("you lost")||response.equals("you won"))){
 				dialogue.setText(response);
 				opponentTurn = false;
 				boolean won = response.equals("you won");
 				EndPanel end = new EndPanel(won, connection);
-				end.setBounds(100, 100, 500, 500);
+				end.setBounds(50, 50, 500, 300);
 				boardPane.add(end,new Integer(9));
 			}else{
 				Scanner rollScan = new Scanner(response).useDelimiter(",");
@@ -498,27 +533,71 @@ public class BoardFrame extends JFrame implements ActionListener, MouseListener 
 				boardPane.revalidate();
 				contentPane.revalidate();
 				response = connection.read();
-				if (response.equals("go")){
+				if (response.equals("go")){//in case opponent craps out
+					//clear opponent's temp pieces
+					//numOpPieces = 0;
 					dialogue.setText("It is your turn!");
 					opponentTurn = false;
 					buttonPanel.setVisible(true);
-					//numPieces =0;
+					numPieces =0;
 					//set piece panel to your color.
+					GamePiecePanel.removeAll();
+					for (int i =0; i <3; i++){
+						GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
+						GamePiecePanel.add(new GamePiece(GamePiece.USER));
+					}
+					GamePiecePanel.add(Box.createRigidArea(new Dimension(10,50)));
 				}else{
 					rollScan = new Scanner(response).useDelimiter(",");
 					int choice1 = rollScan.nextInt();
 					int choice2 = rollScan.nextInt();
+					int []choices = {choice1, choice2};
+					for (int c: choices){
+						if (columns[c-2].hasTemp(Column.OPPONENT)){
+							for (int i =0; i<numOpPieces; i++){
+								if (tempOpPieces[i].getCol() == c){
+									int height = columns[c-2].getTemp(Column.OPPONENT);
+									tempOpPieces[i].setY(height+1);
+									columns[c-2].setTemp(Column.OPPONENT, height+1);
+								}
+							}
+						}else if (numOpPieces <3){
+							if (columns[c-2].hasFinal(Column.OPPONENT)){
+								int height = columns[c-2].getFinal(Column.OPPONENT);
+								tempOpPieces[numOpPieces++]= new GamePiece(GamePiece.OPPONENT,c,height+1);
+								columns[c-2].setTemp(Column.OPPONENT, height+1);
+							}else {
+								tempOpPieces[numOpPieces++]= new GamePiece(GamePiece.OPPONENT,c,1);
+								columns[c-2].setTemp(Column.OPPONENT, 1);
+							}
+						}
+					}
+					//draw pieces on board
+					//update RH Panel
 				}
-				//show move on board
-				//if (columns[choice1-2].hasTemp(Column.OPPONENT))
-					//advance piece
-				//else if (columns[choice1-2].hasFinal(Column.OPPONENT))
-					//place piece
-				//else if (opponentpieces < 3)
-					//place piece at bottom
 			}
 			if (!opponentTurn)
 				turnTimer.stop();
+		}else if (source == fadeInTimer){
+			if (alpha<255){
+				backlight.setBackground(new Color(255,255,0,alpha));
+				alpha+=15;
+			}else if (alpha >= 255){
+				fadeInTimer.stop();
+			}
+		}else if (source == fadeOutTimer){
+			if (alpha >0){
+				for (Component c : boardPane.getComponentsInLayer(2))
+					c.setBackground(new Color(255,255,0,alpha));
+				//backlight.setBackground(new Color(255,255,0,alpha));
+				alpha -= 15;
+			}else if (alpha <=0){
+				//backlight.setBackground(new Color(255,255,0,alpha));
+				for (Component c : boardPane.getComponentsInLayer(2)){
+					c.setBackground(new Color(255,255,0,alpha));
+				}
+				fadeOutTimer.stop();
+			}
 		}
 	}
 	
