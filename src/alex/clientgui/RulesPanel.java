@@ -28,9 +28,10 @@ public class RulesPanel extends JFrame implements ActionListener {
 		JPanel innerPanel = new JPanel();
 		innerPanel.setLayout(new BoxLayout(innerPanel,BoxLayout.PAGE_AXIS));
 
-		JTextField rules = new JTextField();
+		JTextPane rules = new JTextPane();
+		rules.setContentType("text/html");
 		rules.setEditable(false);
-		rules.setText("GameRules.txt");
+		rules.setText("<html>GameRules.txt<br>newline</html>");
 		
 		mainMenu = new JButton("Return to main");
 		mainMenu.setVisible(true);
