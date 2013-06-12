@@ -12,11 +12,14 @@ public class StartPanel extends JFrame implements ActionListener{
 	private JTextField usernameIn;
 	private JTextField passwordIn;
 	private Container contentPane;
+	private final String HOST;
+	private final int PORT;
 	private static int invalidAttempts=0;
-	private final ClientConnection connection;
+	private ClientConnection connection;
 	
-	public StartPanel(Container contentPaneIn, ClientConnection connectionIn){
-		connection = connectionIn;
+	public StartPanel(Container contentPaneIn, String hostIn, int portIn){
+		HOST = hostIn;
+		PORT = portIn;
 		
 		contentPaneIn.removeAll();
 		contentPane = contentPaneIn;
@@ -108,6 +111,7 @@ public class StartPanel extends JFrame implements ActionListener{
 		Object source = e.getSource();
 		LoadingFrame lf = null;
 		if ((source == logIn) && (invalidAttempts < 3)){
+			connection = new ClientConnection(HOST, PORT);
 			String userName = usernameIn.getText();
 			if (userName.contains(",")){
 				error.setText("Username contains the illegal character ','");
@@ -170,12 +174,7 @@ public class StartPanel extends JFrame implements ActionListener{
 			error.setForeground(Color.RED);
 			error.setText("Too many invalid log in attempts: disconnecting");
 			connection.close();
-			//this.setVisible(false);
-			//this.dispose();
 		}
-		/*int playerNum = Integer.parseInt(connection.read());
-		System.out.println(playerNum);
-		lf.ready(playerNum);*/
 	}
 	
 	public JButton getLogin(){

@@ -1,6 +1,7 @@
 package alex.clientgui;
 
 import javax.swing.*;
+
 import java.awt.*;
 
 public class Column extends JPanel {
@@ -8,7 +9,7 @@ public class Column extends JPanel {
 	public static final int OPPONENT = 2;
 	private boolean conquered;
 	private PositionButton [] positions;
-	private final int columnNum;
+	private final int columnNum, colHeight;
 	private int tempHeight, finalHeight;
 	private int opponentTemp, opponentFinal;
 	
@@ -19,11 +20,14 @@ public class Column extends JPanel {
 		opponentTemp = 0;
 		opponentFinal =0;
 		conquered = false;
+		int tempColHeight = 0;
 		//set up number of buttons on column.
 		for (int i =0; i <6; i++){
 			if (colNumIn == (i+2)){
 				positions = new PositionButton[3+(2*i)];
-				this.setLayout(new GridLayout(3+(2*i),1));
+				setLayout(new BoxLayout(this,BoxLayout.PAGE_AXIS));
+				//this.setLayout(new GridLayout(3+(2*i),1));
+				tempColHeight = 3+(2*i);
 				break;
 			}
 		}
@@ -31,25 +35,33 @@ public class Column extends JPanel {
 			if (colNumIn == (i+2)){
 				positions = new PositionButton[13-(2*(i-5))];
 				this.setLayout(new GridLayout(13-(2*(i-5)),1));
+				tempColHeight = 13-(2*(i-5));
 				break;
 			}
-		}		
+		}	
+		
+		colHeight = tempColHeight;
 		//initialize buttons on column.
 		for (int i=0;i< positions.length; i++){
 			PositionButton pos = new PositionButton(columnNum,(positions.length-i));
-			/*pos.setMinimumSize(new Dimension(47,28));
-			pos.setMaximumSize(new Dimension(47,40));
-			pos.setPreferredSize(new Dimension(47,34));
+			pos.setMinimumSize(new Dimension(35,35));
+			pos.setMaximumSize(new Dimension(35,35));
+			pos.setPreferredSize(new Dimension(35,35));
 			pos.setRolloverEnabled(false);
-			pos.setBackground(Color.white);*/
+			pos.setBackground(Color.white);
 			positions[(positions.length-1)-i] = pos;//start from bottom of column
 			this.add(pos);
 		}
+		setBorder(BorderFactory.createLineBorder(Color.black, 3));
 		
 	}
 	
-	public PositionButton getPosButton(int height){
+	public PositionButton getPosButton(int height) throws ArrayIndexOutOfBoundsException{
 		return positions[height-1];
+	}
+	
+	public int getColHeight(){
+		return colHeight;
 	}
 	
 	public int getColNum(){
@@ -125,8 +137,7 @@ public class Column extends JPanel {
 			positions[position-1].setBackground(Color.yellow);
 			positions[position-1].setRolloverEnabled(true);
 		}catch (ArrayIndexOutOfBoundsException e){
-			System.out.println("Unable to highlight column: Array Index out of bounds ["+(position-1)+"]");
-			System.out.println(e.getMessage());
+			//if array index out of bounds do not try to highlight
 		}
 	}
 	

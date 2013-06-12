@@ -24,7 +24,7 @@ public class HighScoreFrame extends JFrame implements ActionListener {
 	
 	@Override
 	public void actionPerformed(ActionEvent arg0) {
-		new StartPanel(contentPane, connection);
+		new MainMenuFrame(contentPane, connection);
 
 
 	}

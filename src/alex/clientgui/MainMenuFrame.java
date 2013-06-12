@@ -8,8 +8,16 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 	private JButton newGame;
 	private JButton highScore;
 	private JButton logOut;
+	private int PORT;
+	private String HOST;
 	private Container contentPane;
-	private final ClientConnection connection;
+	private ClientConnection connection;
+	
+	public MainMenuFrame(Container contentPaneIn, ClientConnection connectionIn,String host, int port){
+		this(contentPaneIn,connectionIn);
+		PORT = port;
+		HOST = host;
+	}
 	
 	public MainMenuFrame(Container contentPaneIn, ClientConnection connectionIn){
 		connection = connectionIn;
@@ -77,12 +85,12 @@ public class MainMenuFrame extends JFrame implements ActionListener {
 	public void actionPerformed(ActionEvent e) {
 		Object source = e.getSource();
 		if (source == newGame){
-			StartPanel sp = new StartPanel(contentPane, connection);
+			StartPanel sp = new StartPanel(contentPane, HOST, PORT);
 		}else if(source == highScore){
 			HighScoreFrame hsf = new HighScoreFrame(contentPane, connection);
 		}else if(source == logOut){
 			//close connection
-			StartPanel sp = new StartPanel(contentPane, connection);
+			StartPanel sp = new StartPanel(contentPane, HOST, PORT);
 		}
 
 	}

@@ -8,6 +8,8 @@ public class GamePiece extends JLabel {
 	public static final int OPPONENT=2;
 	private ImageIcon userIcon = new ImageIcon("userPiece.jpg");
 	private ImageIcon opponentIcon = new ImageIcon("opponentPiece.jpg");
+	private ImageIcon userFinalIcon = new ImageIcon("userFinalPiece.jpg");
+	private ImageIcon opponentFinalIcon = new ImageIcon("opponentFinalPiece.jpg");
 	private int colNum;
 	private int xPos;
 	private int yPos;
@@ -30,7 +32,7 @@ public class GamePiece extends JLabel {
 			this.setIcon(opponentIcon);
 		}
 		xPos = 107+(col-2)*(47);
-		yPos = 520-(height-1)*(36);
+		yPos = 520-(height-1)*(35);
 	}
 	
 	public int getXPos(){
@@ -40,10 +42,21 @@ public class GamePiece extends JLabel {
 	public int getYPos(){
 		return yPos;
 	}
+	public void setYPixels(int pixels){
+		yPos=pixels;
+	}
+	
 	public void setY(int height){
-		yPos = 520-(height-1)*(36);
+		yPos = 520-(height-1)*(35);
 	}
 	public int getCol(){
 		return colNum;
+	}
+	
+	public void setFinal(int PLAYER){
+		if (PLAYER == USER)
+			this.setIcon(userFinalIcon);
+		else if (PLAYER == OPPONENT)
+			this.setIcon(opponentFinalIcon);
 	}
 }
